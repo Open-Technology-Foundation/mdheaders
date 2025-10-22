@@ -1,0 +1,235 @@
+#!/bin/bash
+set -euo pipefail
+shopt -s inherit_errexit shift_verbose extglob
+
+# mdheaders - CLI tool for manipulating markdown header levels
+# Usage: mdheaders {upgrade|downgrade|normalize} [OPTIONS] FILE
+
+# Script Metadata
+VERSION='1.0.0'
+SCRIPT_PATH=$(realpath -- "$0")
+SCRIPT_DIR=${SCRIPT_PATH%/*}
+SCRIPT_NAME=${SCRIPT_PATH##*/}
+#shellcheck disable=SC2034  # VERSION and SCRIPT_NAME reserved for future use
+readonly -- VERSION SCRIPT_PATH SCRIPT_DIR SCRIPT_NAME
+
+# Source the library
+#shellcheck source=libmdheaders.bash
+source "$SCRIPT_DIR/libmdheaders.bash"
+
+# Error handling functions
+error() {
+  local -- msg
+  for msg in "$@"; do
+    printf '%s: Error: %s\n' "$SCRIPT_NAME" "$msg" >&2
+  done
+}
+
+die() {
+  local -i exit_code=${1:-1}
+  shift
+  (($#)) && error "$@"
+  exit "$exit_code"
+}
+
+# Validate option has argument
+noarg() {
+  (($# > 1)) || die 2 "Option '$1' requires an argument"
+}
+
+# Display usage information
+show_usage() {
+  cat <<'EOF'
+Usage: mdheaders {upgrade|downgrade|normalize|up|down|norm} [OPTIONS] FILE
+
+Modify markdown header levels while preserving code blocks.
+
+Commands:
+  upgrade, up         Increase header levels (# → ##)
+  downgrade, down     Decrease header levels (## → #)
+  normalize, norm     Normalize minimum header to specified level
+
+Options:
+  -l, --levels=N         Number of levels to shift (default: 1)
+  -s, --start-level=N    Target starting level for normalize (default: 1)
+  -o, --output=FILE      Output file (default: stdout)
+  -i, --in-place         Modify file in-place
+  -b, --backup[=SUFFIX]  Create backup before in-place edit (default: .bak)
+  --skip-errors          Skip invalid headers with warning (default)
+  --stop-on-error        Abort on first invalid header
+  -q, --quiet            Suppress warnings and progress messages
+  -v, --verbose          Show detailed processing information
+  -h, --help             Show this help message
+
+Examples:
+  mdheaders upgrade README.md
+  mdheaders down -l 2 -ib README.md
+  mdheaders up -l 1 -o NEW.md README.md
+  mdheaders normalize --start-level=2 README.md
+  mdheaders norm -s 2 -ib README.md
+  mdheaders up -qib README.md
+
+Exit codes:
+  0  Success
+  1  Error or all headers skipped
+  2  Invalid arguments
+
+EOF
+}
+
+# Main function
+main() {
+  # Default values
+  local -- command=""
+  local -i levels=1
+  local -i start_level=1
+  local -- output_file=""
+  local -i in_place=0
+  local -- backup_suffix=""
+  local -- error_mode="skip"
+  local -i quiet=0
+  local -- input_file=""
+
+  # Parse command
+  if (($# == 0)); then
+    show_usage
+    return 2
+  fi
+
+  case "$1" in
+    upgrade|up)
+      command="upgrade"
+      shift
+      ;;
+    downgrade|down)
+      command="downgrade"
+      shift
+      ;;
+    normalize|norm)
+      command="normalize"
+      shift
+      ;;
+    -h|--help|help)
+      show_usage
+      return 0
+      ;;
+    *)
+      die 2 "Unknown command '$1'" 'Use --help for usage information'
+      ;;
+  esac
+
+  # Parse options
+  while (($#)); do case "$1" in
+    -l|--levels)
+      noarg "$@"
+      shift
+      levels="$1"
+      ;;
+    --levels=*)
+      levels="${1#*=}"
+      ;;
+    -s|--start-level)
+      noarg "$@"
+      shift
+      start_level="$1"
+      ;;
+    --start-level=*)
+      start_level="${1#*=}"
+      ;;
+    -o|--output)
+      noarg "$@"
+      shift
+      output_file="$1"
+      ;;
+    --output=*)
+      output_file="${1#*=}"
+      ;;
+    -i|--in-place)
+      in_place=1
+      ;;
+    -b|--backup)
+      backup_suffix=".bak"
+      ;;
+    --backup=*)
+      backup_suffix="${1#*=}"
+      ;;
+    --skip-errors)
+      error_mode="skip"
+      ;;
+    --stop-on-error)
+      error_mode="stop"
+      ;;
+    -q|--quiet)
+      quiet=1
+      ;;
+    -v|--verbose)
+      quiet=0
+      ;;
+    -h|--help)
+      show_usage
+      return 0
+      ;;
+    -[ibqvh]*) #shellcheck disable=SC2046 #split up bundled short options
+      set -- '' $(printf -- "-%c " $(grep -o . <<<"${1:1}")) "${@:2}"
+      ;;
+    -*)
+      die 2 "Unknown option '$1'"
+      ;;
+    '')
+      # Skip empty argument from option bundling
+      ;;
+    *)
+      if [[ -z "$input_file" ]]; then
+        input_file="$1"
+      else
+        die 2 'Multiple input files specified'
+      fi
+      ;;
+  esac; shift; done
+
+  # Validate arguments
+  [[ -n "$input_file" ]] || die 2 'No input file specified'
+  [[ -f "$input_file" ]] || die 1 "File not found: $input_file"
+  ((levels >= 1)) || die 2 'Levels must be >= 1'
+  ((in_place && ${#output_file} > 0)) && die 2 'Cannot use both --in-place and --output'
+
+  # Create backup if requested and doing in-place edit
+  if ((in_place && ${#backup_suffix} > 0)); then
+    local -- backup_file="${input_file}${backup_suffix}"
+    cp "$input_file" "$backup_file" || die 1 'Failed to create backup file'
+    ((quiet)) || printf 'Created backup: %s\n' "$backup_file" >&2
+  fi
+
+  # Process the file
+  local -- temp_file=""
+  temp_file=$(mktemp) || die 1 'Failed to create temporary file'
+  trap 'rm -f "${temp_file:-}"' EXIT
+
+  local -i result=0
+  if [[ "$command" == "upgrade" ]]; then
+    mdh_upgrade "$levels" "$error_mode" "$quiet" < "$input_file" > "$temp_file" || result=$?
+  elif [[ "$command" == "downgrade" ]]; then
+    mdh_downgrade "$levels" "$error_mode" "$quiet" < "$input_file" > "$temp_file" || result=$?
+  elif [[ "$command" == "normalize" ]]; then
+    mdh_normalize "$start_level" "$error_mode" "$quiet" < "$input_file" > "$temp_file" || result=$?
+  fi
+
+  # Handle output
+  if ((result == 0)); then
+    if ((in_place)); then
+      mv "$temp_file" "$input_file" || die 1 'Failed to write output file'
+      ((quiet)) || printf 'Modified %s in-place\n' "$input_file" >&2
+    elif [[ -n "$output_file" ]]; then
+      mv "$temp_file" "$output_file" || die 1 'Failed to write output file'
+      ((quiet)) || printf 'Wrote output to %s\n' "$output_file" >&2
+    else
+      cat "$temp_file"
+    fi
+  fi
+
+  return "$result"
+}
+
+main "$@"
+
+#fin
