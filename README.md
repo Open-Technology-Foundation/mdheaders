@@ -11,7 +11,6 @@ A Bash tool for manipulating markdown header levels while preserving code blocks
 - **Flexible output**: stdout, file, or in-place modification
 - **Safety features**: Validates H1-H6 boundaries, optional backups
 - **Library + CLI**: Reusable functions and command-line interface
-- **BCS compliant**: Follows [BASH-CODING-STANDARD](https://github.com/Open-Technology-Foundation/bash-coding-standard) (97% compliance)
 
 ## Installation
 
@@ -219,29 +218,6 @@ Test fixtures are in `tests/fixtures/`:
 - Only handles fenced code blocks (``` and ~~~), not indented code blocks
 - Doesn't process inline code spans for headers
 - Assumes well-formed markdown (unclosed fences will be detected but may produce unexpected results)
-
-## Code Quality
-
-### Bash Coding Standard Compliance
-
-This project adheres to the [BASH-CODING-STANDARD](https://github.com/Open-Technology-Foundation/bash-coding-standard) with **97% compliance**.
-
-**Implemented BCS features:**
-- ✓ Strict error handling (`set -euo pipefail`)
-- ✓ Required shell options (`shopt -s inherit_errexit shift_verbose extglob`)
-- ✓ Standardized error functions (`error()`, `die()`)
-- ✓ Proper variable declarations with types
-- ✓ Argument validation (`noarg()` helper)
-- ✓ Consistent quoting and expansion patterns
-- ✓ Shellcheck compliance (SC1091 intentionally suppressed)
-- ✓ Proper trap cleanup handling
-- ✓ Exit code consistency
-
-**Script structure:**
-- Clear separation of concerns (library vs CLI)
-- Comprehensive option parsing with bundling support
-- Defensive input validation
-- Clean main function pattern
 
 ## License
 
