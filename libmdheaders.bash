@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # libmdheaders.bash - Library for manipulating markdown header levels
 # Handles upgrading/downgrading headers while preserving code blocks
-# NOTE: This is a library file meant to be sourced, not executed directly
+# NOTE: This is a library file meant to be sourced, not executed directly;
+#       requires external msg functions for info(), warn(), error()
+
+# English pluralizer - outputs 's' unless count is 1
+# Usage: "file$(s "${#files[@]}")" → "file" or "files"
+s() { (( ${1:-1} == 1 )) || echo -n 's'; }
 
 # Process markdown content and modify header levels
 # Args:
@@ -17,14 +22,14 @@ mdh_process() {
   local -i quiet="${3:-0}"
 
   local -i in_code_block=0
-  local -- fence_type=""
+  local -- fence_type=''
   local -- line
   local -i modified=0
   local -i skipped=0
   local -i line_num=0
 
   while IFS= read -r line; do
-    ((line_num+=1))
+    line_num+=1
 
     # Check for code fence toggle (``` or ~~~)
     # Using variables to avoid backtick interpretation issues
@@ -35,7 +40,7 @@ mdh_process() {
         local -- close_regex="^[[:space:]]*${fence_type}"
         if [[ "$line" =~ $close_regex ]]; then
           in_code_block=0
-          fence_type=""
+          fence_type=''
         fi
       else
         # Opening fence
@@ -55,20 +60,20 @@ mdh_process() {
 
       # Validate new level (H1=1 to H6=6)
       if ((new_level < 1)); then
-        ((skipped+=1))
+        skipped+=1
         if ((quiet == 0)); then
-          printf 'Warning: Line %d: Cannot downgrade H%d (already at minimum)\n' "$line_num" "$current_level" >&2
+          warn "Line $line_num: Cannot downgrade H$current_level (already at minimum)"
         fi
         if [[ "$error_mode" == "stop" ]]; then
           return 1
         fi
         printf '%s\n' "$line"
       elif ((new_level > 6)); then
-        ((skipped+=1))
+        skipped+=1
         if ((quiet == 0)); then
-          printf 'Warning: Line %d: Cannot upgrade H%d (already at maximum)\n' "$line_num" "$current_level" >&2
+          warn "Line $line_num: Cannot upgrade H$current_level (already at maximum)"
         fi
-        if [[ "$error_mode" == "stop" ]]; then
+        if [[ "$error_mode" == stop ]]; then
           return 1
         fi
         printf '%s\n' "$line"
@@ -77,7 +82,7 @@ mdh_process() {
         local -- new_hashes
         new_hashes=$(printf '#%.0s' $(seq 1 "$new_level"))
         printf '%s%s\n' "$new_hashes" "$rest"
-        ((modified+=1))
+        modified+=1
       fi
     else
       # Not a header or inside code block - output as-is
@@ -87,12 +92,12 @@ mdh_process() {
 
   # Warn if file ended with unclosed code block
   if ((in_code_block && quiet == 0)); then
-    printf 'Warning: File ended with unclosed code block\n' >&2
+    warn 'File ended with unclosed code block'
   fi
 
   # Report summary
   if ((quiet == 0 && (modified > 0 || skipped > 0))); then
-    printf 'Processed %d header(s), skipped %d\n' "$modified" "$skipped" >&2
+    info "Processed $modified header$(s "$modified"), skipped $skipped"
   fi
 
   # Return success if we modified anything, or if nothing needed modification
@@ -113,7 +118,7 @@ mdh_upgrade() {
   local -i quiet="${3:-0}"
 
   if ((levels < 1)); then
-    printf 'Error: Upgrade levels must be >= 1\n' >&2
+    error 'Upgrade levels must be >= 1'
     return 1
   fi
 
@@ -133,7 +138,7 @@ mdh_downgrade() {
   local -i quiet="${3:-0}"
 
   if ((levels < 1)); then
-    printf 'Error: Downgrade levels must be >= 1\n' >&2
+    error 'Downgrade levels must be >= 1'
     return 1
   fi
 
@@ -201,14 +206,14 @@ mdh_normalize() {
 
   # Validate target level
   if ((target_level < 1 || target_level > 6)); then
-    printf 'Error: Target level must be between 1 and 6\n' >&2
+    error 'Target level must be between 1 and 6'
     return 1
   fi
 
   # Store stdin to temp file so we can read it twice
   local -- temp_content
   temp_content=$(mktemp) || {
-    printf 'Error: Failed to create temporary file\n' >&2
+    error 'Failed to create temporary file'
     return 1
   }
   trap 'rm -f "${temp_content:-}"' RETURN
@@ -219,7 +224,7 @@ mdh_normalize() {
   # First pass: detect minimum level
   local -i min_level
   if ! min_level=$(mdh_detect_min_level < "$temp_content"); then
-    printf 'Error: No headers found in document\n' >&2
+    error 'No headers found in document'
     rm -f "$temp_content"
     return 1
   fi
@@ -229,13 +234,13 @@ mdh_normalize() {
 
   # Report what we're doing
   if ((quiet == 0)); then
-    printf 'Detected minimum level: H%d, target: H%d, delta: %+d\n' "$min_level" "$target_level" "$delta" >&2
+    info "Detected minimum level: H$min_level, target: H$target_level, delta: $delta"
   fi
 
   # If already at target, just output as-is
   if ((delta == 0)); then
     if ((quiet == 0)); then
-      printf 'Document already normalized to H%d\n' "$target_level" >&2
+      info "Document already normalized to H$target_level"
     fi
     cat "$temp_content"
     rm -f "$temp_content"

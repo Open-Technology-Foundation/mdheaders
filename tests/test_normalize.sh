@@ -4,7 +4,7 @@ set -euo pipefail
 # Test script for normalize functionality
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CHMD="$SCRIPT_DIR/../chmdheaders"
+CHMD="$SCRIPT_DIR/../mdheaders"
 FIXTURES="$SCRIPT_DIR/fixtures"
 
 declare -i passed=0
@@ -13,7 +13,6 @@ declare -i failed=0
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Test helper functions
