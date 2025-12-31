@@ -1,0 +1,126 @@
+.\" mdheaders - Manipulate markdown header levels
+.\" https://github.com/Open-Technology-Foundation/mdheaders
+.\"
+.TH MDHEADERS 1 "December 2025" "mdheaders 1.1.0" "User Commands"
+.
+.SH NAME
+mdheaders \- manipulate markdown header levels while preserving code blocks
+.
+.SH SYNOPSIS
+.B mdheaders
+.I command
+.RI [ options ]
+.I file
+.
+.SH DESCRIPTION
+.B mdheaders
+is a tool for modifying markdown header levels (H1\-H6) while preserving
+the contents of fenced code blocks. It can upgrade headers (increase depth),
+downgrade headers (decrease depth), or normalize headers to start at a
+specified level.
+.PP
+Headers inside fenced code blocks (delimited by \fB```\fR or \fB~~~\fR) are
+not modified, ensuring code examples remain intact.
+.
+.SH COMMANDS
+.TP
+.BR upgrade ", " up
+Increase header levels. For example, \fB#\fR becomes \fB##\fR, \fB##\fR
+becomes \fB###\fR, etc. Headers at H6 cannot be upgraded further.
+.TP
+.BR downgrade ", " down
+Decrease header levels. For example, \fB##\fR becomes \fB#\fR, \fB###\fR
+becomes \fB##\fR, etc. Headers at H1 cannot be downgraded further.
+.TP
+.BR normalize ", " norm
+Automatically adjust all headers so the minimum header level matches a
+target level. Uses a two\-pass algorithm: first detects the current minimum
+header level, then shifts all headers by the required delta.
+.
+.SH OPTIONS
+.TP
+.BR \-l ", " \-\-levels =\fIN\fR
+Number of levels to shift when upgrading or downgrading. Default is 1.
+.TP
+.BR \-s ", " \-\-start\-level =\fIN\fR
+Target starting level for the normalize command. Must be 1\-6. Default is 1.
+.TP
+.BR \-o ", " \-\-output =\fIFILE\fR
+Write output to FILE instead of stdout.
+.TP
+.BR \-i ", " \-\-in\-place
+Modify the input file in\-place instead of writing to stdout.
+.TP
+.BR \-b ", " \-\-backup [=\fISUFFIX\fR]
+Create a backup before in\-place modification. Default suffix is \fB.bak\fR.
+Can specify a custom suffix with \fB\-\-backup=.orig\fR.
+.TP
+.B \-\-skip\-errors
+Skip headers that would violate H1\-H6 boundaries, with a warning. This is
+the default behavior.
+.TP
+.B \-\-stop\-on\-error
+Abort processing on the first header that would violate H1\-H6 boundaries.
+.TP
+.BR \-q ", " \-\-quiet
+Suppress warnings and progress messages.
+.TP
+.BR \-v ", " \-\-verbose
+Show detailed processing information. This is the default.
+.TP
+.BR \-V ", " \-\-version
+Display version information and exit.
+.TP
+.BR \-h ", " \-\-help
+Display help message and exit.
+.
+.SH EXAMPLES
+.TP
+Upgrade all headers by one level:
+.B mdheaders up README.md
+.TP
+Downgrade headers in\-place with backup:
+.B mdheaders down \-ib document.md
+.TP
+Upgrade by two levels, save to new file:
+.B mdheaders up \-l 2 \-o NEW.md OLD.md
+.TP
+Normalize document to start at H2:
+.B mdheaders norm \-s 2 README.md
+.TP
+Quiet in\-place upgrade with backup:
+.B mdheaders up \-qib file.md
+.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Error occurred, or all headers were skipped due to boundary violations.
+.TP
+.B 2
+Invalid arguments or unknown command/option.
+.
+.SH BUGS
+.IP \(bu 2
+Only handles fenced code blocks (\fB```\fR and \fB~~~\fR), not indented
+code blocks (4\-space indentation).
+.IP \(bu 2
+Does not process headers that appear within inline code spans.
+.IP \(bu 2
+Assumes well\-formed markdown; unclosed code fences may produce unexpected
+results.
+.
+.SH SEE ALSO
+.BR markdown (7),
+.BR pandoc (1)
+.
+.SH AUTHOR
+Biksu Okusi, Okusi Group
+.br
+.UR https://github.com/Open-Technology-Foundation/mdheaders
+.UE
+.
+.SH LICENSE
+GPL\-3.0

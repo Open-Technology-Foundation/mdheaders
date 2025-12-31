@@ -28,11 +28,11 @@ sudo curl -fsSL https://raw.githubusercontent.com/Open-Technology-Foundation/mdh
 git clone https://github.com/Open-Technology-Foundation/mdheaders.git
 cd mdheaders
 
-# Option 1: Copy (standalone)
+# Install script
 sudo cp mdheaders /usr/local/bin/
 
-# Option 2: Symlink (for development)
-sudo ln -s "$(pwd)/mdheaders" /usr/local/bin/mdheaders
+# Install manpage (optional)
+sudo cp mdheaders.1 /usr/share/man/man1/
 ```
 
 ## Commands
