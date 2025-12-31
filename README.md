@@ -10,7 +10,7 @@ A Bash tool for manipulating markdown header levels while preserving code blocks
 - **Code block awareness**: Preserves fenced code blocks (``` and ~~~)
 - **Flexible output**: stdout, file, or in-place modification
 - **Safety features**: Validates H1-H6 boundaries, optional backups
-- **Library + CLI**: Reusable functions and command-line interface
+- **Single-file**: Self-contained script with no dependencies
 
 ## Installation
 
@@ -129,64 +129,6 @@ This is useful for:
 ◉ Inline code with backticks
 ◉ Exact whitespace after `#` symbols
 ◉ All non-header content
-
-## Library Usage
-
-Source the library in your own Bash scripts:
-
-```bash
-#!/bin/bash
-source /path/to/libmdheaders.bash
-
-# Upgrade by 1 level
-mdh_upgrade 1 "skip" 0 < input.md > output.md
-
-# Downgrade by 2 levels, stop on error, quiet mode
-mdh_downgrade 2 "stop" 1 < input.md > output.md
-
-# Normalize to H2, skip errors, quiet mode
-mdh_normalize 2 "skip" 1 < input.md > output.md
-```
-
-### Library Functions
-
-#### `mdh_upgrade LEVELS [ERROR_MODE] [QUIET]`
-Increase header levels by N.
-
-**Arguments:**
-- `LEVELS` - Number of levels to upgrade (required)
-- `ERROR_MODE` - "skip" or "stop" (default: "skip")
-- `QUIET` - 0=verbose, 1=quiet (default: 0)
-
-#### `mdh_downgrade LEVELS [ERROR_MODE] [QUIET]`
-Decrease header levels by N.
-
-**Arguments:**
-- `LEVELS` - Number of levels to downgrade (required)
-- `ERROR_MODE` - "skip" or "stop" (default: "skip")
-- `QUIET` - 0=verbose, 1=quiet (default: 0)
-
-#### `mdh_normalize TARGET_LEVEL [ERROR_MODE] [QUIET]`
-Normalize document to start at specified header level.
-
-**Arguments:**
-- `TARGET_LEVEL` - Desired minimum header level 1-6 (required)
-- `ERROR_MODE` - "skip" or "stop" (default: "skip")
-- `QUIET` - 0=verbose, 1=quiet (default: 0)
-
-**Behavior:**
-- Detects current minimum header level
-- Calculates delta needed to reach target
-- Applies delta to all headers
-
-#### `mdh_detect_min_level`
-Detect the minimum header level in a document.
-
-**Arguments:** None
-
-**Returns:**
-- Outputs minimum level (1-6) to stdout
-- Returns 0 if headers found, 1 if no headers
 
 ## Testing
 
