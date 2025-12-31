@@ -7,7 +7,7 @@ set -euo pipefail
 shopt -s inherit_errexit shift_verbose extglob nullglob
 
 # Script Metadata
-declare -r VERSION='1.2.0'
+declare -r VERSION='1.2.1'
 #shellcheck disable=SC2155
 declare -r SCRIPT_PATH=$(realpath -e -- "$0")
 #shellcheck disable=SC2034  # SCRIPT_DIR reserved for future use

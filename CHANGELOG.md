@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.2.1] - 2025-12-31
 
 ### Added
 - Extended test suite from 26 to 46 tests
@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Initial development with separate library file architecture.
 
+[1.2.1]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Open-Technology-Foundation/mdheaders/releases/tag/v1.0.0
