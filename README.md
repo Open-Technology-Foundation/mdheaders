@@ -5,10 +5,10 @@ Manipulate markdown header levels while preserving code blocks.
 ## Quick Start
 
 ```bash
-# Install
 sudo curl -fsSL https://raw.githubusercontent.com/Open-Technology-Foundation/mdheaders/main/mdheaders -o /usr/local/bin/mdheaders && sudo chmod +x /usr/local/bin/mdheaders
+```
 
-# Use
+```
 mdheaders up README.md       # Upgrade:   # → ##
 mdheaders down README.md     # Downgrade: ## → #
 mdheaders norm -s 2 doc.md   # Normalize to start at H2
@@ -196,11 +196,9 @@ Test fixtures are in `tests/fixtures/`.
 
 ## License
 
-See repository license.
+GPL-3. See [LICENSE](LICENSE).
 
 ## Author
 
-Gary Dean (Biksu Okusi)
+Biksu Okusi
 Okusi Group
-
-#fin
