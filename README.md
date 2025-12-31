@@ -8,7 +8,7 @@ Manipulate markdown header levels while preserving code blocks.
 sudo curl -fsSL https://raw.githubusercontent.com/Open-Technology-Foundation/mdheaders/main/mdheaders -o /usr/local/bin/mdheaders && sudo chmod +x /usr/local/bin/mdheaders
 ```
 
-```
+```bash
 mdheaders up README.md       # Upgrade:   # → ##
 mdheaders down README.md     # Downgrade: ## → #
 mdheaders norm -s 2 doc.md   # Normalize to start at H2
@@ -55,6 +55,7 @@ sudo ln -s "$(pwd)/mdheaders" /usr/local/bin/mdheaders
 | `--skip-errors` | Skip invalid headers with warning (default) |
 | `--stop-on-error` | Abort on first invalid header |
 | `-q, --quiet` | Suppress warnings and progress messages |
+| `-v, --verbose` | Show detailed processing information (default) |
 | `-h, --help` | Show help message |
 | `-V, --version` | Show version |
 
@@ -164,6 +165,11 @@ The `normalize` command uses a two-pass approach:
 - All non-header content
 
 ## Development
+
+### Requirements
+
+- Bash 5.0+ (uses `${var@Q}` quoting, `local --`)
+- Standard coreutils (`mktemp`, `cp`, `mv`, `cat`)
 
 ### Testing
 
