@@ -207,6 +207,10 @@ Test fixtures are in `tests/fixtures/`.
 
 GPL-3. See [LICENSE](LICENSE).
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## Author
 
 Biksu Okusi
