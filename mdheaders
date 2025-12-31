@@ -1,6 +1,7 @@
 #!/bin/bash
-# mdheaders - CLI tool for manipulating markdown header levels
-# Usage: mdheaders {upgrade|downgrade|normalize} [OPTIONS] FILE
+# mdheaders - Manipulate markdown header levels while preserving code blocks
+# https://github.com/Open-Technology-Foundation/mdheaders
+# License: GPL-3.0
 
 set -euo pipefail
 shopt -s inherit_errexit shift_verbose extglob nullglob
@@ -145,7 +146,14 @@ mdh_process() {
   return 0
 }
 
-# Upgrade headers by N levels
+# mdh_upgrade - Increase header levels (# → ##, ## → ###, etc.)
+# Args:
+#   $1: levels - Number of levels to increase (default: 1)
+#   $2: error_mode - "skip" to continue on boundary errors, "stop" to abort (default: skip)
+#   $3: quiet - 0 for verbose output, 1 for quiet (default: 0)
+# Input: markdown content via stdin
+# Output: transformed markdown to stdout
+# Returns: 0 on success, 1 if all headers skipped or error
 mdh_upgrade() {
   local -i levels="${1:-1}"
   local -- error_mode="${2:-skip}"
@@ -159,7 +167,14 @@ mdh_upgrade() {
   mdh_process "$levels" "$error_mode" "$quiet"
 }
 
-# Downgrade headers by N levels
+# mdh_downgrade - Decrease header levels (## → #, ### → ##, etc.)
+# Args:
+#   $1: levels - Number of levels to decrease (default: 1)
+#   $2: error_mode - "skip" to continue on boundary errors, "stop" to abort (default: skip)
+#   $3: quiet - 0 for verbose output, 1 for quiet (default: 0)
+# Input: markdown content via stdin
+# Output: transformed markdown to stdout
+# Returns: 0 on success, 1 if all headers skipped or error
 mdh_downgrade() {
   local -i levels="${1:-1}"
   local -- error_mode="${2:-skip}"
@@ -173,8 +188,11 @@ mdh_downgrade() {
   mdh_process "-$levels" "$error_mode" "$quiet"
 }
 
-# Detect minimum header level in document
-# Returns: 0 if headers found (outputs level), 1 if no headers
+# mdh_detect_min_level - Find the smallest header level in a document
+# Scans document while respecting code block boundaries.
+# Input: markdown content via stdin
+# Output: minimum header level (1-6) to stdout
+# Returns: 0 if headers found, 1 if no headers in document
 mdh_detect_min_level() {
   local -i in_code_block=0 min_level=7 level
   local -- fence_type="" line fence_regex close_regex hashes
@@ -214,7 +232,16 @@ mdh_detect_min_level() {
   return 0
 }
 
-# Normalize document to start at specified header level
+# mdh_normalize - Adjust all headers so minimum level matches target
+# Uses two-pass algorithm: first detects current minimum, then shifts all headers.
+# Example: If doc has H1,H2,H3 and target=2, result is H2,H3,H4.
+# Args:
+#   $1: target_level - Desired minimum header level, 1-6 (default: 1)
+#   $2: error_mode - "skip" to continue on boundary errors, "stop" to abort (default: skip)
+#   $3: quiet - 0 for verbose output, 1 for quiet (default: 0)
+# Input: markdown content via stdin
+# Output: normalized markdown to stdout
+# Returns: 0 on success, 1 if no headers found or all skipped
 mdh_normalize() {
   local -i target_level="${1:-1}"
   local -- error_mode="${2:-skip}"
@@ -271,17 +298,17 @@ mdh_normalize() {
   return "$result"
 }
 
-# Display usage information
+# show_usage - Display help text
 show_usage() {
   cat <<'EOF'
 Usage: mdheaders {upgrade|downgrade|normalize|up|down|norm} [OPTIONS] FILE
 
-Modify markdown header levels while preserving code blocks.
+Manipulate markdown header levels while preserving code blocks.
 
 Commands:
   upgrade, up         Increase header levels (# → ##)
   downgrade, down     Decrease header levels (## → #)
-  normalize, norm     Normalize minimum header to specified level
+  normalize, norm     Auto-adjust all headers to start at target level
 
 Options:
   -l, --levels=N         Number of levels to shift (default: 1)
@@ -297,18 +324,22 @@ Options:
   -h, --help             Show this help message
 
 Examples:
-  mdheaders upgrade README.md
-  mdheaders down -l 2 -ib README.md
-  mdheaders up -l 1 -o NEW.md README.md
-  mdheaders normalize --start-level=2 README.md
-  mdheaders norm -s 2 -ib README.md
-  mdheaders up -qib README.md
+  mdheaders up README.md              # Upgrade headers by 1 level
+  mdheaders down -ib doc.md           # Downgrade in-place with backup
+  mdheaders up -l 2 -o NEW.md OLD.md  # Upgrade by 2, save to new file
+  mdheaders norm -s 2 README.md       # Normalize to start at H2
+
+Behavior:
+  - Fenced code blocks (``` and ~~~) are preserved; headers inside are not modified
+  - Headers cannot go below H1 (#) or above H6 (######)
+  - The normalize command uses two passes: detect minimum, then shift all headers
 
 Exit codes:
   0  Success
   1  Error or all headers skipped
   2  Invalid arguments
 
+More info: https://github.com/Open-Technology-Foundation/mdheaders
 EOF
 }
 
