@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Extended test suite from 26 to 46 tests
+- `test_errors.sh` - 10 tests for error paths and edge cases
+- `test_options.sh` - 10 tests for options and command aliases
+- `tests/run_all.sh` - unified test runner with summary
+- `tests/fixtures/errors.md` - edge case test fixture
+
 ## [1.2.0] - 2025-12-31
 
 ### Added
