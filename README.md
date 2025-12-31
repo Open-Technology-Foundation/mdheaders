@@ -33,6 +33,9 @@ sudo cp mdheaders /usr/local/bin/
 
 # Install manpage (optional)
 sudo cp mdheaders.1 /usr/share/man/man1/
+
+# Install bash completion (optional)
+sudo cp mdheaders.bash_completion /etc/bash_completion.d/mdheaders
 ```
 
 ## Commands

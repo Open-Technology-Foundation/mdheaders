@@ -1,0 +1,53 @@
+# Bash completion for mdheaders
+# https://github.com/Open-Technology-Foundation/mdheaders
+#
+# Installation:
+#   System-wide: sudo cp mdheaders.bash_completion /etc/bash_completion.d/mdheaders
+#   User-only:   cp mdheaders.bash_completion ~/.local/share/bash-completion/completions/mdheaders
+
+_mdheaders() {
+  local cur prev words cword
+  _init_completion || return
+
+  local commands="upgrade up downgrade down normalize norm help"
+  local options="-l --levels -s --start-level -o --output -i --in-place -b --backup --skip-errors --stop-on-error -q --quiet -v --verbose -V --version -h --help"
+
+  # First argument: complete commands
+  if ((cword == 1)); then
+    COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+    return
+  fi
+
+  # After -o or --output: complete any file
+  case "$prev" in
+    -o|--output)
+      _filedir
+      return
+      ;;
+    -l|--levels|-s|--start-level)
+      # Numeric argument expected, no completion
+      COMPREPLY=()
+      return
+      ;;
+    -b|--backup)
+      # Optional suffix, no completion
+      COMPREPLY=()
+      return
+      ;;
+  esac
+
+  # Options or markdown files
+  case "$cur" in
+    -*)
+      COMPREPLY=($(compgen -W "$options" -- "$cur"))
+      ;;
+    *)
+      # Complete markdown files
+      _filedir '@(md|markdown|mkd|mdown)'
+      ;;
+  esac
+}
+
+complete -F _mdheaders mdheaders
+
+#fin
