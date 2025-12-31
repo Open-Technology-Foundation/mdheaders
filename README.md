@@ -15,11 +15,8 @@ A Bash tool for manipulating markdown header levels while preserving code blocks
 ## Installation
 
 ```bash
-# Make executable
-chmod +x mdheaders
-
-# Optionally, symlink to a directory in your PATH
-ln -s $(pwd)/mdheaders /usr/local/bin/mdheaders
+# Copy to a directory in your PATH
+sudo cp mdheaders /usr/local/bin/
 ```
 
 ## Usage
