@@ -1,0 +1,20 @@
+# Audit reports (local only)
+AUDIT-*.md
+
+# Local configuration
+CLAUDE.md
+.symlink
+
+# BCS symlink (local reference)
+BASH-CODING-STANDARD.md
+
+# Backup files
+*.bak
+*.orig
+*~
+
+# Test artifacts
+tests/*.tmp
+tests/*.bak
+
+#fin
