@@ -14,9 +14,23 @@ A Bash tool for manipulating markdown header levels while preserving code blocks
 
 ## Installation
 
+### Quick Install
+
 ```bash
-# Copy to a directory in your PATH
+sudo curl -fsSL https://raw.githubusercontent.com/Open-Technology-Foundation/mdheaders/main/mdheaders -o /usr/local/bin/mdheaders && sudo chmod +x /usr/local/bin/mdheaders
+```
+
+### From Source
+
+```bash
+git clone https://github.com/Open-Technology-Foundation/mdheaders.git
+cd mdheaders
+
+# Option 1: Copy (standalone)
 sudo cp mdheaders /usr/local/bin/
+
+# Option 2: Symlink (for development)
+sudo ln -s "$(pwd)/mdheaders" /usr/local/bin/mdheaders
 ```
 
 ## Usage
