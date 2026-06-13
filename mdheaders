@@ -25,7 +25,7 @@ fi
 # Core message function using FUNCNAME for context
 _msg() {
   local -- prefix="$SCRIPT_NAME:" msg
-  case "${FUNCNAME[1]}" in
+  case ${FUNCNAME[1]} in
     warn)    prefix+=" ${YELLOW}▲${NC}" ;;
     info)    prefix+=" ${CYAN}◉${NC}" ;;
     error)   prefix+=" ${RED}✗${NC}" ;;
@@ -41,6 +41,9 @@ info() { ((VERBOSE)) || return 0; >&2 _msg "$@"; }
 # Unconditional output (errors are never silenced by --quiet)
 error() { >&2 _msg "$@"; }
 die() { (($# > 1)) && error "${@:2}" ||:; exit "${1:-0}"; }
+
+# Remove the temp file on exit or signal (recursion-guarded by resetting traps)
+_cleanup() { trap - EXIT INT TERM; rm -f -- "${TMPFILE:-}"; }
 
 # Validate option has an argument that is not itself an option
 noarg() {
@@ -388,9 +391,11 @@ main() {
     warn 'Ignoring --backup: only applies with --in-place'
   fi
 
-  # Create the temp file; install its cleanup trap first so a signal in the
-  # window cannot leak it. TMPFILE is global so the EXIT trap sees it.
-  trap 'rm -f -- "${TMPFILE:-}"' EXIT
+  # Install cleanup traps before creating the temp file so a signal in the
+  # window cannot leak it. TMPFILE is global so the handler sees it.
+  trap _cleanup EXIT
+  trap '_cleanup; exit 130' INT
+  trap '_cleanup; exit 143' TERM
   TMPFILE=$(mktemp) || die 1 'Failed to create temporary file'
 
   local -i result=0

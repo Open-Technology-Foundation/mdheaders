@@ -25,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Indented ATX headers (1-3 leading spaces) are now recognised and shifted.
 - Output is no longer discarded when every header is at a boundary; a no-op
   pass-through emits the content unchanged and exits 0.
-- The temp file is no longer leaked on stdout/error runs (EXIT trap path fixed).
+- The temp file is no longer leaked on stdout/error runs (EXIT trap path fixed);
+  cleanup is also signal-safe (SIGINT/SIGTERM) via a recursion-guarded handler.
 - Backup (`-b`) refuses to overwrite an existing backup instead of destroying it.
 - Bundled value-options (`-qlo`), `-l`/`-s` followed by another option,
   non-numeric values, and `-o <directory>` now produce a clean usage error
