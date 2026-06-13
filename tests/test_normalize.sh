@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 # Test script for normalize functionality
 
@@ -22,12 +22,12 @@ test_start() {
 
 test_pass() {
   printf '%b%s%b\n' "$GREEN" "  ✓ $1" "$NC"
-  ((passed+=1))
+  passed+=1
 }
 
 test_fail() {
   printf '%b%s%b\n' "$RED" "  ✗ $1" "$NC"
-  ((failed+=1))
+  failed+=1
 }
 
 # Test 1: Basic normalize to H2

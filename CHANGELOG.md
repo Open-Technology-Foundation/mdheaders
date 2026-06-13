@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-06-13
+
+### Security
+- Fixed arithmetic-evaluation command injection via `-l` / `-s` / `--levels=` /
+  `--start-level=`. Option values are now validated as non-negative integers
+  before any integer-context assignment, closing an arbitrary-code-execution
+  vector (e.g. `--levels='HOME[$(cmd)]'`).
+
+### Fixed
+- Preserve a final line lacking a trailing newline (previously silently dropped;
+  destructive with `--in-place`). Affects upgrade, downgrade and normalize.
+- In-place edits now rewrite the existing file, preserving inode, mode, owner,
+  symlinks and hardlinks (previously `mv` reset the mode to 0600 and replaced
+  symlinks with regular files).
+- Closing code fences honour the CommonMark run-length rule; a shorter fence no
+  longer closes a longer one and corrupts code-block content.
+- Lines with 7 or more leading `#` are treated as text, not headers.
+- Indented ATX headers (1-3 leading spaces) are now recognised and shifted.
+- Output is no longer discarded when every header is at a boundary; a no-op
+  pass-through emits the content unchanged and exits 0.
+- The temp file is no longer leaked on stdout/error runs (EXIT trap path fixed).
+- Backup (`-b`) refuses to overwrite an existing backup instead of destroying it.
+- Bundled value-options (`-qlo`), `-l`/`-s` followed by another option,
+  non-numeric values, and `-o <directory>` now produce a clean usage error
+  (exit 2) instead of crashing.
+- `normalize` no longer rejects `-l 0`; out-of-range `--start-level` exits 2 (was 1).
+- `--stop-on-error` reports the aborting line even with `-q`.
+
+### Added
+- `--` end-of-options sentinel (filenames may begin with `-`).
+- `tests/test_audit.sh` - 41-assertion regression suite covering the above.
+- ShellCheck lint gate in `tests/run_all.sh`.
+
+### Changed
+- `-q` / `-v` set the `VERBOSE` flag directly; removed the dead verbosity gate.
+- Exit code 1 now means "processing error"; an all-skipped no-op is success (0).
+- Documented the ATX-only limitation (setext `===` / `---` left unchanged).
+
 ## [1.2.1] - 2025-12-31
 
 ### Added
@@ -65,6 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 Initial development with separate library file architecture.
 
+[1.3.0]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Open-Technology-Foundation/mdheaders/compare/v1.0.0...v1.1.0

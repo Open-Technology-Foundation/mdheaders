@@ -1,7 +1,7 @@
 .\" mdheaders - Manipulate markdown header levels
 .\" https://github.com/Open-Technology-Foundation/mdheaders
 .\"
-.TH MDHEADERS 1 "December 2025" "mdheaders 1.2.1" "User Commands"
+.TH MDHEADERS 1 "June 2026" "mdheaders 1.3.0" "User Commands"
 .
 .SH NAME
 mdheaders \- manipulate markdown header levels while preserving code blocks
@@ -20,7 +20,15 @@ downgrade headers (decrease depth), or normalize headers to start at a
 specified level.
 .PP
 Headers inside fenced code blocks (delimited by \fB```\fR or \fB~~~\fR) are
-not modified, ensuring code examples remain intact.
+not modified, ensuring code examples remain intact. A closing fence must be at
+least as long as the opening run.
+.PP
+Only ATX headers (\fB#\fR through \fB######\fR, optionally indented up to three
+spaces) are recognized. Setext underlines (\fB===\fR / \fB\-\-\-\fR) are left
+unchanged, and a line with seven or more leading \fB#\fR is treated as text.
+.PP
+In\-place edits rewrite the existing file, preserving its inode, mode, owner,
+symlinks and hardlinks.
 .
 .SH COMMANDS
 .TP
@@ -73,6 +81,10 @@ Display version information and exit.
 .TP
 .BR \-h ", " \-\-help
 Display help message and exit.
+.TP
+.B \-\-
+End of options; any following argument is treated as the input file (allows
+file names beginning with \fB\-\fR).
 .
 .SH EXAMPLES
 .TP
@@ -97,7 +109,9 @@ Quiet in\-place upgrade with backup:
 Success.
 .TP
 .B 1
-Error occurred, or all headers were skipped due to boundary violations.
+A processing error occurred: file not found, no headers found to normalize,
+output write failure, or a \fB\-\-stop\-on\-error\fR abort. (A no\-op run where
+nothing needs shifting is success.)
 .TP
 .B 2
 Invalid arguments or unknown command/option.
@@ -106,6 +120,9 @@ Invalid arguments or unknown command/option.
 .IP \(bu 2
 Only handles fenced code blocks (\fB```\fR and \fB~~~\fR), not indented
 code blocks (4\-space indentation).
+.IP \(bu 2
+Only ATX headers are processed; setext underlines (\fB===\fR / \fB\-\-\-\fR)
+are left unchanged.
 .IP \(bu 2
 Does not process headers that appear within inline code spans.
 .IP \(bu 2

@@ -126,7 +126,9 @@ mdheaders up --stop-on-error doc.md
 - **Normalize** headers: Auto-detect minimum level and normalize to target
 - **Code block awareness**: Preserves fenced code blocks (``` and ~~~)
 - **Flexible output**: stdout, file, or in-place modification
-- **Safety features**: Validates H1-H6 boundaries, optional backups
+- **Safety features**: Validates H1-H6 boundaries, optional backups, numeric
+  option validation; in-place edits preserve inode, mode, owner, symlinks and
+  hardlinks
 - **Single-file**: Self-contained script with no dependencies
 
 ## How It Works
@@ -177,14 +179,15 @@ The `normalize` command uses a two-pass approach:
 ### Testing
 
 ```bash
-# Basic upgrade/downgrade tests (12 tests)
-./tests/test_basic.sh
+# Run everything: ShellCheck lint gate + all suites (87 tests)
+./tests/run_all.sh
 
-# Normalize functionality tests (14 tests)
-./tests/test_normalize.sh
-
-# Run all tests
-./tests/test_basic.sh && ./tests/test_normalize.sh
+# Individual suites
+./tests/test_basic.sh        # 12 - upgrade/downgrade
+./tests/test_normalize.sh    # 14 - normalize
+./tests/test_errors.sh       # 10 - error paths and edge cases
+./tests/test_options.sh      # 10 - options and command aliases
+./tests/test_audit.sh        # 41 - security/regression (injection, data loss, in-place safety)
 ```
 
 Test fixtures are in `tests/fixtures/`.
@@ -193,13 +196,14 @@ Test fixtures are in `tests/fixtures/`.
 
 | Code | Meaning |
 |------|---------|
-| 0 | Success |
-| 1 | Error or all headers skipped |
+| 0 | Success (including a no-op when nothing needs shifting) |
+| 1 | Processing error (file not found, no headers, write failure, abort) |
 | 2 | Invalid arguments |
 
 ## Limitations
 
 - Only handles fenced code blocks (``` and ~~~), not indented code blocks
+- Only ATX headers (`#`) are processed; setext underlines (`===` / `---`) are left unchanged
 - Doesn't process inline code spans for headers
 - Assumes well-formed markdown (unclosed fences may produce unexpected results)
 
