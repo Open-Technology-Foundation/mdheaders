@@ -142,6 +142,11 @@ mk '# Real' '```bash' '# comment in code' '```' '## Real2'; run up -q "$F"
 if [[ $OUT == *$'```bash\n# comment in code'* ]]; then ok "code-block header-like line untouched"; else no "code-block header-like line untouched"; fi
 if [[ $OUT == *"## Real"* && $OUT == *"### Real2"* ]]; then ok "real headers still shifted"; else no "real headers still shifted"; fi
 
+# --- BCS1002: locked PATH — runs even with a hostile/empty caller PATH -----
+mk '# H'
+locked_out=$(PATH=/nonexistent "$CHMD" up -q "$F" 2>/dev/null); locked_rc=$?
+if ((locked_rc == 0)) && [[ $locked_out == *"## H"* ]]; then ok "BCS1002 runs with stripped caller PATH"; else no "BCS1002 runs with stripped caller PATH"; fi
+
 # --- golden exactness (H15-style) ------------------------------------------
 mk '# A' '## B'; run up -q "$F"
 if [[ $OUT == $'## A\n### B' ]]; then ok "golden: up by 1 is exact"; else no "golden: up by 1 is exact"; fi

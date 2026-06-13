@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `-q` / `-v` set the `VERBOSE` flag directly; removed the dead verbosity gate.
 - Exit code 1 now means "processing error"; an all-skipped no-op is success (0).
 - Documented the ATX-only limitation (setext `===` / `---` left unchanged).
+- Harden runtime: require Bash 5+ (version guard) and lock `PATH` to standard
+  locations before invoking any external command.
 
 ## [1.2.1] - 2025-12-31
 
